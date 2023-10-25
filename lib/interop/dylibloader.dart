@@ -27,7 +27,7 @@ ffi.DynamicLibrary dylib_load() {
   //   //flutter, android
   //   libraryPath = "soFilePath";
   // }
-  var libraryPath = "DlibOpencvFfi.so";
+  var libraryPath = "libDlibOpencvFfi.so";
   print("ffi.DynamicLibrary file: $libraryPath");
   _dylib_dlib_opencv = ffi.DynamicLibrary.open(libraryPath);
 

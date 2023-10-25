@@ -1,6 +1,14 @@
 
 # dartffi_dlib_opencv
 
+https://github.com/Luca96/dlib-for-android/tree/master
+
+should down load manual flutter sdk dont use snap
+
+https://dart.dev/get-dart#install-using-apt-get
+
+https://docs.flutter.dev/get-started/install/linux
+
 # /work/flutter-dart-ffi-dlib-opencv/android/app/build.gradle
 ```
 
