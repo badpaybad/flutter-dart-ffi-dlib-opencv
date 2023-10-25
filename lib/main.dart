@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'interop/dlib.dart' as DlibFfi;
+import 'interop/opencv.dart' as OpenCv;
+void main() async {
 
-void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  print(DlibFfi.dylib);
+  print(OpenCv.dylib);
   runApp(const MyApp());
 }
 
