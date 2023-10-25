@@ -19,25 +19,28 @@ template <typename SUBNET> using rcon5  = relu<affine<con5<45,SUBNET>>>;
 
 using net_type = loss_mmod<con<1,9,9,1,1,rcon5<rcon5<rcon5<downsampler<input_rgb_image_pyramid<pyramid_down<6>>>>>>>>;
 
-void detect_face(){
-    //http://dlib.net/dnn_mmod_face_detection_ex.cpp.html
-    //http://dlib.net/face_landmark_detection_ex.cpp.html
-    //http://dlib.net/dnn_face_recognition_ex.cpp.html
-    //frontal_face_detector detector = get_frontal_face_detector();
+
+net_type net;
+void detect_face_load_model(char * file_path){
 
     /* cout << "Call this program like this:" << endl;
         cout << "./dnn_mmod_face_detection_ex mmod_human_face_detector.dat faces/*.jpg" << endl;
         cout << "\nYou can get the mmod_human_face_detector.dat file from:\n";
         cout << "http://dlib.net/files/mmod_human_face_detector.dat.bz2" << endl;*/
     ///work/flutter-dart-ffi-dlib-opencv/assets/weights/mmod_human_face_detector.dat
-
-    net_type net;
-    deserialize("work/flutter-dart-ffi-dlib-opencv/assets/weights/mmod_human_face_detector.dat") >> net;
+    deserialize(std::string(file_path)) >> net;
+}
+void detect_face(char * file_path){
+    //http://dlib.net/dnn_mmod_face_detection_ex.cpp.html
+    //http://dlib.net/face_landmark_detection_ex.cpp.html
+    //http://dlib.net/dnn_face_recognition_ex.cpp.html
+    //frontal_face_detector detector = get_frontal_face_detector();
     /*
         // Upsampling the image will allow us to detect smaller faces but will cause the
         // program to use more RAM and run longer.*/
     matrix<rgb_pixel> img;
-    load_image(img, "/work/flutter-dart-ffi-dlib-opencv/assets/weights/dunp.jpg");
+    //"/work/flutter-dart-ffi-dlib-opencv/assets/weights/dunp.jpg"
+    load_image(img, std::string(file_path));
     while(img.size() < 1800*1800)
         pyramid_up(img);
     /*
@@ -49,3 +52,4 @@ void detect_face(){
     auto dets = net(img);
 
 }
+
