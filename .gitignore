@@ -25,3 +25,8 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+**/build/**
+**/opencv-4.0.1-android-sdk/**
+**/dlib.19.16/**
+/android/app/.cxx/
