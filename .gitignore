@@ -30,3 +30,4 @@ doc/api/
 **/opencv-4.0.1-android-sdk/**
 **/dlib.19.16/**
 /android/app/.cxx/
+**/dlib4android.so/**

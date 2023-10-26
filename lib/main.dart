@@ -1,12 +1,116 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'interop/dlib.dart' as DlibFfi;
 import 'interop/opencv.dart' as OpenCv;
-void main() async {
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+void permissionsRequest() {
+  if (!Platform.isLinux && !Platform.isMacOS && !Platform.isWindows) {
+    [
+      Permission.accessMediaLocation,
+      Permission.camera,
+      Permission.audio,
+      Permission.bluetooth,
+      Permission.bluetoothAdvertise,
+      Permission.bluetoothConnect,
+      Permission.bluetoothScan,
+      Permission.location,
+      Permission.ignoreBatteryOptimizations,
+      //Permission.accessNotificationPolicy,
+      Permission.notification,
+      Permission.mediaLibrary,
+      Permission.microphone,
+      Permission.manageExternalStorage,
+      Permission.storage,
+      //add more permission to request here.
+    ].request().then((statuses) async {
+      String temp = "";
+      for (var pk in statuses.keys) {
+        temp = "$temp\r\n$pk: ${statuses[pk]}";
+      }
+    });
+  }
+}
+
+Future<String> dirApp() async {
+  print("dirToSaveOfflineFile");
+  Directory tempDir = await getTemporaryDirectory();
+  String tempPath = tempDir.path;
+  print("APP temp dir: $tempPath");
+  Directory appDocDir = await getApplicationDocumentsDirectory();
+  String appDocPath = appDocDir.path;
+  print("APP doc dir: $appDocPath");
+
+  return "/${trim(appDocPath, "/")}";
+}
+
+String trim(String src, String char) {
+  String pattern = r'^[' + char + r']+|[' + char + r']+$';
+
+  RegExp regex = RegExp(pattern);
+  String trimmedStr = src.replaceAll(regex, '');
+
+  return trimmedStr;
+}
+
+Future<void> copyAssetToFile(String assetPath, String pathFileName) async {
+  try {
+    // Get the directory for storing files
+    // Directory appDocDir = await getApplicationDocumentsDirectory();
+    // String destPath = '${appDocDir.path}/$fileName';
+    //
+    // // Check if the file already exists
+    // File destFile = File(destPath);
+    // if (await destFile.exists()) {
+    //   // File already exists, you can handle this case accordingly
+    //   return;
+    // }
+
+    // Load the asset
+    ByteData data = await rootBundle.load(assetPath);
+
+    // Write the asset data to the file
+    List<int> bytes = data.buffer.asUint8List();
+    await File(pathFileName).writeAsBytes(bytes);
+  } catch (e) {
+    print('Error copying asset: $e');
+  }
+}
+
+Future<String> get_file_path_mmod_human_face_detector_dat() async {
+  var dir = await dirApp();
+
+  await copyAssetToFile("assets/weights/mmod_human_face_detector.dat",
+      "$dir/mmod_human_face_detector.dat");
+
+  await copyAssetToFile("assets/weights/dunp.jpg", "$dir/dunp.jpg");
+
+  return "$dir/mmod_human_face_detector.dat";
+}
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  print(DlibFfi.dylib);
-  print(OpenCv.dylib);
+  permissionsRequest();
+
+  _initModel() async {
+    print(DlibFfi.dylib);
+    print(OpenCv.dylib);
+    var dir = await dirApp();
+    var fileimg = "$dir/dunp.jpg";
+    var filemodel = await get_file_path_mmod_human_face_detector_dat();
+    await DlibFfi.detect_face_load_model(DlibFfi.dylib, filemodel);
+    print("-------");
+    print(filemodel);
+    print(fileimg);
+    await DlibFfi.detect_face(DlibFfi.dylib, fileimg);
+    print("-------1");
+  }
+
+  _initModel();
   runApp(const MyApp());
 }
 

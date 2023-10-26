@@ -9,12 +9,13 @@
 # Android project path: REPLACE WITH YOUR PROJECT PATH!
 PROJECT_PATH='/work/flutter-dart-ffi-dlib-opencv/android'
 # Directory for storing native libraries
-NATIVE_DIR="$PROJECT_PATH/app/src/main/cppLibs"
+#NATIVE_DIR="$PROJECT_PATH/app/src/main/cppLibs"
+NATIVE_DIR="/work/flutter-dart-ffi-dlib-opencv/dlibopencvbuild/dlib4android.so"
 #NATIVE_DIR="/work/dlib4android.so"
 # Dlib library path: REPLACE WITH YOUR DLIB PATH!
-DLIB_PATH='/work/flutter-dart-ffi-dlib-opencv/dlib.19.16'
+DLIB_PATH='/work/flutter-dart-ffi-dlib-opencv/dlibopencvbuild/dlib-19.16'
 # OpenCV library path: REPLACE WITH YOUR OPENCV PATH!
-OPENCV_PATH='/work/flutter-dart-ffi-dlib-opencv/opencv-4.0.1-android-sdk/OpenCV-android-sdk/sdk/native'
+OPENCV_PATH='/work/flutter-dart-ffi-dlib-opencv/dlibopencvbuild/opencv-4.0.1-android-sdk/OpenCV-android-sdk/sdk/native'
 # Android-cmake path: REPLACE WITH YOUR CMAKE PATH!
 AndroidCmake='/home/dunp/Android/Sdk/cmake/3.22.1/bin/cmake'
 # Android-ndk path: REPLACE WITH YOUR NDK PATH!
@@ -63,7 +64,7 @@ function compile_dlib {
 					  -DANDROID_NDK=$NDK \
 					  -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
 					  -DCMAKE_BUILD_TYPE=Release \
-					  -DCMAKE_CXX_FLAGS="-std=c++11 -frtti -fexceptions" \
+					  -DCMAKE_CXX_FLAGS="-std=c++17 -frtti -fexceptions" \
 					  -DCMAKE_C_FLAGS=-O3 \
 					  -DANDROID_ABI=$abi \
 					  -DANDROID_PLATFORM="android-$MIN_SDK" \
@@ -71,6 +72,10 @@ function compile_dlib {
 					  -DANDROID_STL=c++_shared \
 					  -DANDROID_CPP_FEATURES=rtti exceptions \
 					  -DCMAKE_PREFIX_PATH=../../ \
+					  -DDLIB_USE_BLAS=ON \
+					  -DDLIB_USE_LAPACK=ON \
+					  -DDLIB_JPEG_SUPPORT=ON \
+					  -DDLIB_PNG_SUPPORT=ON \
 					  ../../
  		
  		echo "=> Generating the 'dlib/libdlib.so' for ABI: '$abi'..."
