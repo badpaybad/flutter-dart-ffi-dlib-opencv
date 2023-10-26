@@ -9,27 +9,25 @@ import 'package:path/path.dart' as path;
 
 import 'dylibloader.dart' as DyLibLoader;
 
-final dylib= DyLibLoader.dylib_dlib_opencv;
+final dylib = DyLibLoader.dylib_dlib_opencv;
 
 typedef FfiVoidFunc = ffi.Void Function(ffi.Pointer<Utf8> text);
 
 typedef DartVoidFunc = void Function(ffi.Pointer<Utf8> text);
 
+typedef FfiStringFunc = ffi.Pointer<Utf8> Function(ffi.Pointer<Utf8> text);
 
-typedef FfiStringFunc = ffi.Pointer<Utf8>  Function(ffi.Pointer<Utf8> text);
+typedef DartStringFunc = ffi.Pointer<Utf8> Function(ffi.Pointer<Utf8> text);
 
-typedef DartStringFunc = ffi.Pointer<Utf8>  Function(ffi.Pointer<Utf8> text);
-
-
-
-Future<void> detect_face_load_model(ffi.DynamicLibrary dylib, String file_path_mmod_human_face_detector_dat) async {
-
+Future<void> detect_face_load_model(ffi.DynamicLibrary dylib,
+    String file_path_mmod_human_face_detector_dat) async {
   print("detect_face_load_model:begin");
   DartVoidFunc dunp_func = dylib
       .lookup<ffi.NativeFunction<FfiVoidFunc>>('detect_face_load_model')
       .asFunction();
-
-   dunp_func(file_path_mmod_human_face_detector_dat.toNativeUtf8());
+  var filemodel = file_path_mmod_human_face_detector_dat.toNativeUtf8();
+  dunp_func(filemodel);
+  calloc.free(filemodel);
   print("detect_face_load_model:end");
 }
 
@@ -38,6 +36,21 @@ Future<void> detect_face(ffi.DynamicLibrary dylib, String file_path_img) async {
       .lookup<ffi.NativeFunction<FfiStringFunc>>('detect_face')
       .asFunction();
 
-  var obj= dunp_func(file_path_img.toNativeUtf8());
+  var fileimg = file_path_img.toNativeUtf8();
+  var obj = dunp_func(fileimg);
+  calloc.free(fileimg);
   print("detect_face $obj");
+}
+
+Future<void> detect_face_cpu(
+    ffi.DynamicLibrary dylib, String file_path_img) async {
+  DartStringFunc dunp_func = dylib
+      .lookup<ffi.NativeFunction<FfiStringFunc>>('detect_face_cpu')
+      .asFunction();
+
+  var fileimg = file_path_img.toNativeUtf8();
+  var obj = dunp_func(fileimg);
+  calloc.free(fileimg);
+  print("detect_face ${obj.toDartString()}");
+  calloc.free(obj);
 }

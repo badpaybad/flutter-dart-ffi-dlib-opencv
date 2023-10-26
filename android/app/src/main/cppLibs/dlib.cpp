@@ -12,6 +12,7 @@
 #include "dlib/include/dlib/dlib/dnn.h"
 #include "dlib/include/dlib/dlib/data_io.h"
 #include "dlib/include/dlib/dlib/image_processing.h"
+#include "dlib/include/dlib/dlib/image_processing/frontal_face_detector.h"
 
 using namespace dlib;
 
@@ -24,19 +25,23 @@ struct UnhandleException : public std::exception {
     ~UnhandleException() throw() {} // Updated
     const char *what() const throw() { return s.c_str(); }
 };
-template <long num_filters, typename SUBNET> using con5d = con<num_filters,5,5,2,2,SUBNET>;
-template <long num_filters, typename SUBNET> using con5  = con<num_filters,5,5,1,1,SUBNET>;
 
-template <typename SUBNET> using downsampler  = relu<affine<con5d<32, relu<affine<con5d<32, relu<affine<con5d<16,SUBNET>>>>>>>>>;
-template <typename SUBNET> using rcon5  = relu<affine<con5<45,SUBNET>>>;
+template<long num_filters, typename SUBNET> using con5d = con<num_filters, 5, 5, 2, 2, SUBNET>;
+template<long num_filters, typename SUBNET> using con5 = con<num_filters, 5, 5, 1, 1, SUBNET>;
 
-using net_type = loss_mmod<con<1,9,9,1,1,rcon5<rcon5<rcon5<downsampler<input_rgb_image_pyramid<pyramid_down<6>>>>>>>>;
+template<typename SUBNET> using downsampler = relu<affine<con5d<32, relu<affine<con5d<32, relu<affine<con5d<16, SUBNET>>>>>>>>>;
+template<typename SUBNET> using rcon5 = relu<affine<con5<45, SUBNET>>>;
+
+using net_type = loss_mmod<con<1, 9, 9, 1, 1, rcon5<rcon5<rcon5<downsampler<input_rgb_image_pyramid<pyramid_down<6>>>>>>>>;
 
 static net_type net;
 static int _is_model_loaded = 0;
+
+static frontal_face_detector frontal_detector = get_frontal_face_detector();
+
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
 void detect_face_load_model(char *file_path) {
-    if(_is_model_loaded==1) return;
+    if (_is_model_loaded == 1) return;
     /* cout << "Call this program like this:" << endl;
         cout << "./dnn_mmod_face_detection_ex mmod_human_face_detector.dat faces/*.jpg" << endl;
         cout << "\nYou can get the mmod_human_face_detector.dat file from:\n";
@@ -48,7 +53,7 @@ void detect_face_load_model(char *file_path) {
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
-const char *detect_face(char *file_path) {
+char *detect_face(char *file_path) {
     if (_is_model_loaded == 0) {
         throw UnhandleException(
                 "Model did not load, call detect_face_load_model(...) with args file path: mmod_human_face_detector.dat");
@@ -81,3 +86,28 @@ const char *detect_face(char *file_path) {
     return "";
 }
 
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+
+char *detect_face_cpu(char *file_path) {
+    array2d<unsigned char> img;
+    load_image(img, file_path);
+    // Make the image bigger by a factor of two.  This is useful since
+    // the face detector looks for faces that are about 80 by 80 pixels
+    // or larger.  Therefore, if you want to find faces that are smaller
+    // than that then you need to upsample the image as we do here by
+    // calling pyramid_up().  So this will allow it to detect faces that
+    // are at least 40 by 40 pixels in size.  We could call pyramid_up()
+    // again to find even smaller faces, but note that every time we
+    // upsample the image we make the detector run slower since it must
+    // process a larger image.
+    pyramid_up(img);
+    // Now tell the face detector to give us a list of bounding boxes
+    // around all the faces it can find in the image.
+    std::vector<rectangle> dets = frontal_detector(img);
+    //std::cout << "Number of faces detected: " << dets.size() << std::endl;
+    char *res = (std::string("Number of faces detected: ") +std::to_string(dets.size()).c_str();
+
+    //throw UnhandleException(std::string(res));
+
+    return (char *) res;
+}

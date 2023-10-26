@@ -43,7 +43,7 @@ android {
 prebuild also in this git at NATIVE_DIR="$PROJECT_PATH/app/src/main/cppLibs" , if want build new version dlib opencv goto bellow
 
 ## folder download or git clone
-Assume root prj folder: /work/flutter-dart-ffi-dlib-opencv
+Assume root prj folder: /work/flutter-dart-ffi-dlib-opencv/dlibopencvbuild
 ```
 |--android
 |--dlib.19.16  # download from http://dlib.net/files/  extract http://dlib.net/files/dlib-19.16.zip

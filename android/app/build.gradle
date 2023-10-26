@@ -36,7 +36,7 @@ android {
     defaultConfig {
         externalNativeBuild {
             cmake {
-                cppFlags '-frtti -fexceptions -std=c++17'
+                cppFlags '-frtti -fexceptions -std=c++11'
                 arguments "-DANDROID_STL=c++_shared"
             }
         }

@@ -30,7 +30,7 @@ android {
     defaultConfig {
         externalNativeBuild {
             cmake {
-                cppFlags '-frtti -fexceptions -std=c++11'
+                cppFlags '-frtti -fexceptions -std=c++17'
                 arguments "-DANDROID_STL=c++_shared"
             }
         }
@@ -43,14 +43,14 @@ android {
 prebuild also in this git at NATIVE_DIR="$PROJECT_PATH/app/src/main/cppLibs" , if want build new version dlib opencv goto bellow
 
 ## folder download or git clone
-Assume root prj folder: /work/flutter-dart-ffi-dlib-opencv
+Assume root prj folder: /work/flutter-dart-ffi-dlib-opencv/dlibopencvbuild
 ```
 |--android
 |--dlib.19.16  # download from http://dlib.net/files/  extract http://dlib.net/files/dlib-19.16.zip
 |----dlib
 |----docs
 |----...
-|--opencv-4.0.1-android-sdk  # https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiLgOzW9JCCAxWAh1YBHcaDDjIQFnoECBUQAQ&url=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fopencvlibrary%2Ffiles%2F4.0.1%2Fopencv-4.0.1-android-sdk.zip%2Fdownload&usg=AOvVaw1PepXxKcB-OPWMXKLrCvB7&opi=89978449
+|--opencv-4.0.1-android-sdk  # https://sourceforge.net/projects/opencvlibrary/files/4.0.1/opencv-4.0.1-android-sdk.zip/download
 |----OpenCV-android-sdk # https://docs.opencv.org/4.x/da/d2a/tutorial_O4A_SDK.html
 |------apk
 |------sdk
