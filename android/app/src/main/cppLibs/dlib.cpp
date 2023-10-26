@@ -5,10 +5,21 @@
 #define DLIB_PNG_SUPPORT "ON"
 #endif
 
+#include <unistd.h>
+#include <fcntl.h>
+#include <termios.h>
+
+#include <stdio.h>
+#include <ctype.h>
+
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 #include "dlib/include/dlib/dlib/image_processing/frontal_face_detector.h"
 //#include "../../android/app/src/main/cppLibs/dlib/include/dlib/dlib/gui_widgets.h"
 #include "dlib/include/dlib/dlib/image_io.h"
-#include <iostream>
+//#include <iostream>
 #include "dlib/include/dlib/dlib/dnn.h"
 #include "dlib/include/dlib/dlib/data_io.h"
 #include "dlib/include/dlib/dlib/image_processing.h"
@@ -83,7 +94,7 @@ char *detect_face(char *file_path) {
     auto dets = net(img);
 
     //return std::string(dets).c_str();
-    return "";
+    return (char *)(std::string("")).c_str();
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
@@ -105,9 +116,9 @@ char *detect_face_cpu(char *file_path) {
     // around all the faces it can find in the image.
     std::vector<rectangle> dets = frontal_detector(img);
     //std::cout << "Number of faces detected: " << dets.size() << std::endl;
-    char *res = (std::string("Number of faces detected: ") +std::to_string(dets.size()).c_str();
+    auto res= std::string("Number of faces detected: ");
+    res.append(std::to_string(dets.size()));
 
-    //throw UnhandleException(std::string(res));
+    return (char *) res.c_str();
 
-    return (char *) res;
 }

@@ -39,7 +39,7 @@ Future<void> detect_face(ffi.DynamicLibrary dylib, String file_path_img) async {
   var fileimg = file_path_img.toNativeUtf8();
   var obj = dunp_func(fileimg);
   calloc.free(fileimg);
-  print("detect_face $obj");
+  print("detect_face ${obj.toDartString()}");
 }
 
 Future<void> detect_face_cpu(
@@ -51,6 +51,13 @@ Future<void> detect_face_cpu(
   var fileimg = file_path_img.toNativeUtf8();
   var obj = dunp_func(fileimg);
   calloc.free(fileimg);
-  print("detect_face ${obj.toDartString()}");
+
+  var rawData = obj.cast<ffi.Uint8>();
+  //print("detect_face ${obj.toDartString()}");
+  print('Raw Data: ${rawData.asTypedList(rawData.elementAt(0).value)}');
+  var utf8xxx= Uint8List.fromList(rawData.asTypedList(rawData.elementAt(0).value));
+  print(utf8.decode(utf8xxx));
+  //print('Raw Data: ${utf8.decode(rawData.asTypedList(rawData.elementAt(0).value))}');
+
   calloc.free(obj);
 }
