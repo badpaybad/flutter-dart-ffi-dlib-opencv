@@ -106,9 +106,9 @@ void main() async {
     print("-------");
     print(filemodel);
     print(fileimg);
-    await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
+    var facefounds = await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
+    print("-------1 => $facefounds bbox shold be x:582,y:496,w:771,h:771");
     await DlibFfi.test_string(DlibFfi.dylib);
-    print("-------1 => ");
   }
 
   _initModel();
@@ -142,13 +142,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  MyHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -159,7 +159,7 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
+  String title;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -168,7 +168,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void _incrementCounter() {
+  Future<void> _incrementCounter() async {
+    var dir = await dirApp();
+    var fileimg = "$dir/dunp.jpg";
+    var facefounds = await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
+    print("-------1 => $facefounds bbox shold be x:582,y:496,w:771,h:771");
+
+    widget.title = "$facefounds";
+
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
