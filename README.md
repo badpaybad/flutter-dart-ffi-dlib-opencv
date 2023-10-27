@@ -3,7 +3,20 @@
 
 Base on idea and build libdlib.so for android with java https://github.com/Luca96/dlib-for-android/tree/master
 
-I try to build and use libdlib.so with FFI dart. 
+I try to build and use libdlib.so with FFI dart. You dont need to build .so cause I prebuild in android/app/src/main/cppLibs/dlib/lib
+
+Just try to write your c/c++ to wrap dlib and dart ffi
+
+android/app/src/main/cppLibs/CMakeLists.txt will link wrap dlib to you flutter 
+                
+                var libraryPath = "libDlibOpencvFfi.so";
+                print("ffi.DynamicLibrary file: $libraryPath");
+                _dylib_dlib_opencv = ffi.DynamicLibrary.open(libraryPath);
+
+```
+code c/c++ in folder: android/app/src/main/cppLibs
+code dart ffi in folder: lib/interop 
+```
 
 should down load manual flutter sdk dont use snap
 
