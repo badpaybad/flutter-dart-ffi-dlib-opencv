@@ -1,7 +1,9 @@
 
 # dartffi_dlib_opencv
 
-https://github.com/Luca96/dlib-for-android/tree/master
+Base on idea and build libdlib.so for android with java https://github.com/Luca96/dlib-for-android/tree/master
+
+I try to build and use libdlib.so with FFI dart. 
 
 should down load manual flutter sdk dont use snap
 
