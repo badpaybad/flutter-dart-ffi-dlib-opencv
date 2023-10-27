@@ -106,7 +106,8 @@ void main() async {
     print("-------");
     print(filemodel);
     print(fileimg);
-     await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
+    await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
+    await DlibFfi.test_string(DlibFfi.dylib);
     print("-------1 => ");
   }
 

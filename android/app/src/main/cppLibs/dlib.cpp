@@ -26,7 +26,7 @@
 #include "dlib/include/dlib/dlib/image_processing/frontal_face_detector.h"
 
 using namespace dlib;
-
+// ref : https://learnopencv.com/install-opencv-on-android-tiny-and-optimized/
 //using namespace std;
 struct UnhandleException : public std::exception {
     std::string s;
@@ -98,7 +98,6 @@ char *detect_face(char *file_path) {
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
-
 char *detect_face_cpu(char *file_path) {
     array2d<unsigned char> img;
     load_image(img, file_path);
@@ -119,6 +118,15 @@ char *detect_face_cpu(char *file_path) {
     auto res= std::string("Number of faces detected: ");
     res.append(std::to_string(dets.size()));
 
-    return (char *) res.c_str();
+    char *cstr = new char[res.length() + 1];
 
+    strcpy(cstr, res.c_str());
+
+    return cstr;
+
+}
+
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+char* test_string(char* inputText){
+    return inputText;
 }
