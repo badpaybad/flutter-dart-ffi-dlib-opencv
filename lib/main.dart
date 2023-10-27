@@ -96,7 +96,7 @@ void main() async {
 
   permissionsRequest();
 
-  _initModel() async {
+  _init_Poc_Code() async {
     print(DlibFfi.dylib);
     print(OpenCv.dylib);
     var dir = await dirApp();
@@ -111,7 +111,7 @@ void main() async {
     await DlibFfi.test_string(DlibFfi.dylib);
   }
 
-  _initModel();
+  _init_Poc_Code();
   runApp(const MyApp());
 }
 
