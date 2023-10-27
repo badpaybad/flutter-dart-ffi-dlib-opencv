@@ -25,7 +25,6 @@ typedef Get2DLongArrayFunction = Pointer<Pointer<Int64>> Function(
     Pointer<Utf8> text);
 typedef Get2DLongArray = Pointer<Pointer<Int64>> Function(Pointer<Utf8> text);
 
-
 Future<void> detect_face_load_model(
     DynamicLibrary dylib, String file_path_mmod_human_face_detector_dat) async {
   print("detect_face_load_model:begin");
@@ -38,20 +37,45 @@ Future<void> detect_face_load_model(
   print("detect_face_load_model:end");
 }
 
-// Future<void> detect_face(DynamicLibrary dylib, String file_path_img) async {
-//   DartStringFunc dunp_func =
-//       dylib.lookup<NativeFunction<FfiStringFunc>>('detect_face').asFunction();
-//
-//   var fileimg = file_path_img.toNativeUtf8();
-//   var obj = dunp_func(fileimg);
-//   calloc.free(fileimg);
-//   print("detect_face ${obj.toDartString()}");
-// }
+Future<List<BBox>> detect_face(DynamicLibrary dylib, String file_path_img) async {
+
+  var t1 = DateTime.now().millisecondsSinceEpoch;
+
+  Get2DLongArray dunp_func = dylib
+      .lookup<NativeFunction<Get2DLongArrayFunction>>('detect_face')
+      .asFunction();
+
+  var fileimg = file_path_img.toNativeUtf8();
+  var objFromCPP = dunp_func(fileimg);
+  calloc.free(fileimg);
+
+  List<BBox> facefound = [];
+  int numrows = objFromCPP[0][0];
+  int numcols = objFromCPP[0][1];
+
+  for (var i = 1; i < numrows; i++) {
+    if (objFromCPP[i] == nullptr) continue;
+    final row = BBox();
+    row.x = objFromCPP[i][0];
+    row.y = objFromCPP[i][1];
+    row.w = objFromCPP[i][2];
+    row.h = objFromCPP[i][3];
+    facefound.add(row);
+  }
+  calloc.free(objFromCPP);
+  var t2 = DateTime.now().millisecondsSinceEpoch;
+
+  print("detect_face_cpu in ${t2 - t1} miliseconds");
+
+  return facefound;
+}
 /**
  * Return list of bbox to crop face from image base on x,y,w,h
  */
 Future<List<BBox>> detect_face_cpu(
     DynamicLibrary dylib, String file_path_img) async {
+  var t1 = DateTime.now().millisecondsSinceEpoch;
+
   Get2DLongArray dunp_func = dylib
       .lookup<NativeFunction<Get2DLongArrayFunction>>('detect_face_cpu')
       .asFunction();
@@ -61,19 +85,22 @@ Future<List<BBox>> detect_face_cpu(
   calloc.free(fileimg);
 
   List<BBox> facefound = [];
-  int numrows= objFromCPP[0][0];
-  int numcols= objFromCPP[0][1];
+  int numrows = objFromCPP[0][0];
+  int numcols = objFromCPP[0][1];
 
-  for (var i = 1;i<numrows; i++) {
-    if( objFromCPP[i] == nullptr) continue;
+  for (var i = 1; i < numrows; i++) {
+    if (objFromCPP[i] == nullptr) continue;
     final row = BBox();
-    row.x=objFromCPP[i][0];
-    row.y=objFromCPP[i][1];
-    row.w=objFromCPP[i][2];
-    row.h=objFromCPP[i][3];
+    row.x = objFromCPP[i][0];
+    row.y = objFromCPP[i][1];
+    row.w = objFromCPP[i][2];
+    row.h = objFromCPP[i][3];
     facefound.add(row);
   }
   calloc.free(objFromCPP);
+  var t2 = DateTime.now().millisecondsSinceEpoch;
+
+  print("detect_face_cpu in ${t2 - t1} miliseconds");
 
   return facefound;
   //print("detect_face ${obj.toDartString()}");
@@ -97,16 +124,14 @@ Future<void> test_string(DynamicLibrary dylib) async {
   print("detect_face ${dunp_func(input).toDartString()}");
 }
 
-
-class BBox{
-  int x=0;
-  int y=0;
-  int w=-1;
-  int h=-1;
+class BBox {
+  int x = 0;
+  int y = 0;
+  int w = -1;
+  int h = -1;
 
   @override
-  String toString(){
+  String toString() {
     return '{"x": $x, "y": $y, "w": $w, "h": $h}';
   }
-
 }

@@ -20,8 +20,12 @@ OPENCV_PATH='/work/flutter-dart-ffi-dlib-opencv/dlibopencvbuild/opencv-4.0.1-and
 AndroidCmake='/home/dunp/Android/Sdk/cmake/3.22.1/bin/cmake'
 # Android-ndk path: REPLACE WITH YOUR NDK PATH!
 #NDK="${ANDROID_NDK:/home/dunp/Android/Sdk/ndk/26.1.10909125}"
-ANDROID_NDK="/home/dunp/Android/Sdk/ndk/21.0.6113669"
-NDK="/home/dunp/Android/Sdk/ndk/21.0.6113669"
+#home 23.1.7779620
+ANDROID_NDK="/home/dunp/Android/Sdk/ndk/23.1.7779620"
+NDK="/home/dunp/Android/Sdk/ndk/23.1.7779620"
+#work
+#ANDROID_NDK="/home/dunp/Android/Sdk/ndk/21.0.6113669"
+#NDK="/home/dunp/Android/Sdk/ndk/21.0.6113669"
 TOOLCHAIN="$NDK/build/cmake/android.toolchain.cmake"
 # path to strip tool: REPLACE WITH YOURS, ACCORDING TO OS!!
 STRIP_PATH="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
@@ -63,14 +67,14 @@ function compile_dlib {
 		$AndroidCmake  -DBUILD_SHARED_LIBS=1 \
 					  -DANDROID_NDK=$NDK \
 					  -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
-					  -DCMAKE_BUILD_TYPE=Release \
-					  -DCMAKE_CXX_FLAGS="-std=c++11 -frtti -fexceptions" \
-					  -DCMAKE_C_FLAGS=-O3 \
 					  -DANDROID_ABI=$abi \
 					  -DANDROID_PLATFORM="android-$MIN_SDK" \
 					  -DANDROID_TOOLCHAIN=clang \
 					  -DANDROID_STL=c++_shared \
 					  -DANDROID_CPP_FEATURES=rtti exceptions \
+            -DCMAKE_BUILD_TYPE=Release \
+					  -DCMAKE_CXX_FLAGS="-std=c++11 -frtti -fexceptions" \
+					  -DCMAKE_C_FLAGS=-O3 \
 					  -DCMAKE_PREFIX_PATH=../../ \
 					  -DDLIB_USE_BLAS=ON \
 					  -DDLIB_USE_LAPACK=ON \
