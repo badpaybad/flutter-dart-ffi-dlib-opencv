@@ -115,4 +115,28 @@ result will NATIVE_DIR="$PROJECT_PATH/app/src/main/cppLibs"
 
 ```
 
-# .../android/app/CMakeLists.txt
+# .../android/app/src/main/cppLibs/CMakeLists.txt
+
+Will declare in grade.build 
+Code c/c++ will build by NDK and link to our prj
+
+# code PoC 
+c/c++ usage dlib
+```
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+char *detect_face_cpu(char *file_path) {
+    array2d<unsigned char> img;
+    ....
+```
+dart ffi call
+```
+
+Future<void> detect_face_cpu(
+    DynamicLibrary dylib, String file_path_img) async {
+  DartStringFunc dunp_func = dylib
+      .lookup<NativeFunction<FfiStringFunc>>('detect_face_cpu')
+      .asFunction();
+...
+```
+test in flutter app check file: main.dart 
+
