@@ -7,29 +7,39 @@ import 'package:ffi/ffi.dart';
 
 import 'package:path/path.dart' as path;
 
-ffi.DynamicLibrary get dylib_dlib_opencv => dylib_load();
-ffi.DynamicLibrary? _dylib_dlib_opencv;
+class DynamicLibLoader{
 
-ffi.DynamicLibrary dylib_load() {
-  if (_dylib_dlib_opencv != null) return _dylib_dlib_opencv!;
-  //
-  // var libraryPath = path.join(dirInterop, 'dunpserialport', 'libserialport.so');
-  //
-  // if (Platform.isMacOS) {
-  //   libraryPath =
-  //       path.join(dirInterop, 'dunpserialport', 'libserialport.dylib');
-  // } else if (Platform.isWindows) {
-  //   libraryPath =
-  //       path.join(dirInterop, 'dunpserialport', 'Debug', 'libserialport.dll');
-  // } else if (Platform.isLinux) {
-  //   libraryPath = path.join(dirInterop, 'dunpserialport', 'libserialport.so');
-  // } else {
-  //   //flutter, android
-  //   libraryPath = "soFilePath";
-  // }
-  var libraryPath = "libDlibOpencvFfi.so";
-  print("ffi.DynamicLibrary file: $libraryPath");
-  _dylib_dlib_opencv = ffi.DynamicLibrary.open(libraryPath);
+  static DynamicLibLoader instance=DynamicLibLoader._();
 
-  return _dylib_dlib_opencv!;
+  DynamicLibLoader._(){
+    dylib_load();
+  }
+
+  ffi.DynamicLibrary get dylib_dlib_opencv => dylib_load();
+  ffi.DynamicLibrary? _dylib_dlib_opencv;
+
+  ffi.DynamicLibrary dylib_load() {
+    if (_dylib_dlib_opencv != null) return _dylib_dlib_opencv!;
+    //
+    // var libraryPath = path.join(dirInterop, 'dunpserialport', 'libserialport.so');
+    //
+    // if (Platform.isMacOS) {
+    //   libraryPath =
+    //       path.join(dirInterop, 'dunpserialport', 'libserialport.dylib');
+    // } else if (Platform.isWindows) {
+    //   libraryPath =
+    //       path.join(dirInterop, 'dunpserialport', 'Debug', 'libserialport.dll');
+    // } else if (Platform.isLinux) {
+    //   libraryPath = path.join(dirInterop, 'dunpserialport', 'libserialport.so');
+    // } else {
+    //   //flutter, android
+    //   libraryPath = "soFilePath";
+    // }
+    var libraryPath = "libDlibOpencvFfi.so";
+    print("ffi.DynamicLibrary file: $libraryPath");
+    _dylib_dlib_opencv = ffi.DynamicLibrary.open(libraryPath);
+
+    return _dylib_dlib_opencv!;
+  }
+
 }

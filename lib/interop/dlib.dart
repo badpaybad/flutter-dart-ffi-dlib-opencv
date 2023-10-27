@@ -9,7 +9,7 @@ import 'package:path/path.dart' as path;
 
 import 'dylibloader.dart' as DyLibLoader;
 
-final dylib = DyLibLoader.dylib_dlib_opencv;
+final dylib = DyLibLoader.DynamicLibLoader.instance.dylib_dlib_opencv;
 
 typedef FfiVoidFunc = Void Function(Pointer<Utf8> text);
 
