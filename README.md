@@ -7,6 +7,8 @@ I try to build and use libdlib.so with FFI dart. You dont need to build .so caus
 
 Just try to write your c/c++ to wrap dlib and dart ffi
 
+dlib http://dlib.net/books.html
+
 android/app/src/main/cppLibs/CMakeLists.txt will link wrap dlib to you flutter 
                 
                 var libraryPath = "libDlibOpencvFfi.so";
@@ -23,6 +25,17 @@ should down load manual flutter sdk dont use snap
 https://dart.dev/get-dart#install-using-apt-get
 
 https://docs.flutter.dev/get-started/install/linux
+
+# why dlib ? http://dlib.net/books.html
+
+Cause it write in c/c++ version 11 so mostly work cross platform
+
+Some challenger about AI eg: face detect, get vector from face ( can use to recognize face with cosin compare ...) , can train your own data for object detection...
+
+### https://opencv.org/about/
+Opencv got alot of famous functions to work with images
+
+After porting use dart ffi we will have strong lib or package to process image with ML DL AI - the computer vision :D
 
 # /work/flutter-dart-ffi-dlib-opencv/android/app/build.gradle
 ```
