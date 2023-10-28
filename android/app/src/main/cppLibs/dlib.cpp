@@ -19,8 +19,9 @@
 
 #include "dlib/include/dlib/dlib/image_processing/frontal_face_detector.h"
 //#include "../../android/app/src/main/cppLibs/dlib/include/dlib/dlib/gui_widgets.h"
+#include "dlib/include/dlib/dlib/clustering.h"
+#include "dlib/include/dlib/dlib/string.h"
 #include "dlib/include/dlib/dlib/image_io.h"
-//#include <iostream>
 #include "dlib/include/dlib/dlib/dnn.h"
 #include "dlib/include/dlib/dlib/data_io.h"
 #include "dlib/include/dlib/dlib/image_processing.h"
@@ -47,7 +48,77 @@ template<typename SUBNET> using rcon5 = relu<affine<con5<45, SUBNET>>>;
 
 using net_type = loss_mmod<con<1, 9, 9, 1, 1, rcon5<rcon5<rcon5<downsampler<input_rgb_image_pyramid<pyramid_down<6>>>>>>>>;
 
-static net_type net;
+//---------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------------------
+
+// The next bit of code defines a ResNet network.  It's basically copied
+// and pasted from the dnn_imagenet_ex.cpp example, except we replaced the loss
+// layer with loss_metric and made the network somewhat smaller.  Go read the introductory
+// dlib DNN examples to learn what all this stuff means.
+//
+// Also, the dnn_metric_learning_on_images_ex.cpp example shows how to train this network.
+// The dlib_face_recognition_resnet_model_v1 model used by this example was trained using
+// essentially the code shown in dnn_metric_learning_on_images_ex.cpp except the
+// mini-batches were made larger (35x15 instead of 5x5), the iterations without progress
+// was set to 10000, and the training dataset consisted of about 3 million images instead of
+// 55.  Also, the input layer was locked to images of size 150.
+template <template <int,template<typename>class,int,typename> class block, int N, template<typename>class BN, typename SUBNET>
+using residual = add_prev1<block<N,BN,1,tag1<SUBNET>>>;
+
+template <template <int,template<typename>class,int,typename> class block, int N, template<typename>class BN, typename SUBNET>
+using residual_down = add_prev2<avg_pool<2,2,2,2,skip1<tag2<block<N,BN,2,tag1<SUBNET>>>>>>;
+
+template <int N, template <typename> class BN, int stride, typename SUBNET>
+using block  = BN<con<N,3,3,1,1,relu<BN<con<N,3,3,stride,stride,SUBNET>>>>>;
+
+template <int N, typename SUBNET> using ares      = relu<residual<block,N,affine,SUBNET>>;
+template <int N, typename SUBNET> using ares_down = relu<residual_down<block,N,affine,SUBNET>>;
+
+template <typename SUBNET> using alevel0 = ares_down<256,SUBNET>;
+template <typename SUBNET> using alevel1 = ares<256,ares<256,ares_down<256,SUBNET>>>;
+template <typename SUBNET> using alevel2 = ares<128,ares<128,ares_down<128,SUBNET>>>;
+template <typename SUBNET> using alevel3 = ares<64,ares<64,ares<64,ares_down<64,SUBNET>>>>;
+template <typename SUBNET> using alevel4 = ares<32,ares<32,ares<32,SUBNET>>>;
+
+using anet_type = loss_metric<fc_no_bias<128,avg_pool_everything<
+        alevel0<
+                alevel1<
+                        alevel2<
+                                alevel3<
+                                        alevel4<
+                                                max_pool<3,3,2,2,relu<affine<con<32,7,7,2,2,
+                                                        input_rgb_image_sized<150>
+                                                >>>>>>>>>>>>;
+
+
+// ----------------------------------------------------------------------------------------
+
+std::vector<matrix<rgb_pixel>> jitter_image(
+        const matrix<rgb_pixel>& img
+)
+{
+    // All this function does is make 100 copies of img, all slightly jittered by being
+    // zoomed, rotated, and translated a little bit differently. They are also randomly
+    // mirrored left to right.
+    thread_local dlib::rand rnd;
+
+    std::vector<matrix<rgb_pixel>> crops;
+    for (int i = 0; i < 100; ++i)
+        crops.push_back(jitter_image(img,rnd));
+
+    return crops;
+}
+
+// ----------------------------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------------------------
+static shape_predictor sp_5facechip;
+static shape_predictor sp_68facechip;
+static anet_type net_recognition;
+static net_type net_detect;
 static int _is_model_loaded = 0;
 
 static frontal_face_detector frontal_detector = get_frontal_face_detector();
@@ -61,9 +132,49 @@ void detect_face_load_model(char *file_path) {
         cout << "http://dlib.net/files/mmod_human_face_detector.dat.bz2" << endl;*/
     ///work/flutter-dart-ffi-dlib-opencv/assets/weights/mmod_human_face_detector.dat
 
-    deserialize(std::string(file_path)) >> net;
+    deserialize(std::string(file_path)) >> net_detect;
     _is_model_loaded = 1;
 }
+
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+void detect_5facechip_load_model(char *file_path) {
+    //cout << "http://dlib.net/files/shape_predictor_5_face_landmarks.dat.bz2" << endl;
+    /* cout << "Call this program like this:" << endl;
+        cout << "./dnn_mmod_face_detection_ex mmod_human_face_detector.dat faces/*.jpg" << endl;
+        cout << "\nYou can get the mmod_human_face_detector.dat file from:\n";
+        cout << "http://dlib.net/files/mmod_human_face_detector.dat.bz2" << endl;*/
+    ///work/flutter-dart-ffi-dlib-opencv/assets/weights/mmod_human_face_detector.dat
+
+    deserialize(std::string(file_path)) >> sp_5facechip;
+
+}
+
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+void detect_68facechip_load_model(char *file_path) {
+    //cout << "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2" << endl;
+    /* cout << "Call this program like this:" << endl;
+        cout << "./dnn_mmod_face_detection_ex mmod_human_face_detector.dat faces/*.jpg" << endl;
+        cout << "\nYou can get the mmod_human_face_detector.dat file from:\n";
+        cout << "http://dlib.net/files/mmod_human_face_detector.dat.bz2" << endl;*/
+    ///work/flutter-dart-ffi-dlib-opencv/assets/weights/mmod_human_face_detector.dat
+
+    deserialize(std::string(file_path)) >> sp_68facechip;
+
+}
+
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+void recognition_face_load_model(char *file_path) {
+    //cout << "http://dlib.net/files/dlib_face_recognition_resnet_model_v1.dat.bz2" << endl;
+    /* cout << "Call this program like this:" << endl;
+        cout << "./dnn_mmod_face_detection_ex mmod_human_face_detector.dat faces/*.jpg" << endl;
+        cout << "\nYou can get the mmod_human_face_detector.dat file from:\n";
+        cout << "http://dlib.net/files/mmod_human_face_detector.dat.bz2" << endl;*/
+    ///work/flutter-dart-ffi-dlib-opencv/assets/weights/mmod_human_face_detector.dat
+
+    deserialize(std::string(file_path)) >> net_recognition;
+
+}
+
 
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
 long **detect_face(char *file_path, int pyramid_up_count) {
@@ -96,7 +207,7 @@ long **detect_face(char *file_path, int pyramid_up_count) {
         // the same size.  To avoid this requirement on images being the same size we
         // process them individually in this example.*/
 
-    std::vector<dlib::mmod_rect> dets = net(img);
+    std::vector<dlib::mmod_rect> dets = net_detect (img);
     int numRows = dets.size() + 1;
     int numCols = 4;
     long **listBbox = (long **) malloc(numRows * sizeof(long *));
