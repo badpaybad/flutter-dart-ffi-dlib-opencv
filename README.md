@@ -86,6 +86,10 @@ Assume root prj folder: /work/flutter-dart-ffi-dlib-opencv/dlibopencvbuild
 ```
 ## goto setupdlibopencv.sh change value to your folder
 
+Will declare in grade.build
+Code c/c++ will build by NDK and link to our prj
+
+### .../android/app/src/main/cppLibs/CMakeLists.txt
 
 ```
 
@@ -128,10 +132,6 @@ result will NATIVE_DIR="$PROJECT_PATH/app/src/main/cppLibs"
 
 ```
 
-# .../android/app/src/main/cppLibs/CMakeLists.txt
-
-Will declare in grade.build 
-Code c/c++ will build by NDK and link to our prj
 
 # code PoC 
 c/c++ usage dlib
