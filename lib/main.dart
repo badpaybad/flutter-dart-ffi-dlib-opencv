@@ -108,10 +108,10 @@ void main() async {
     print(fileimg);
     var facefounds = await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
     print("-------1 => $facefounds bbox shold be x:582,y:496,w:771,h:771");
-
-    // var facefounds_gpu = await DlibFfi.detect_face(DlibFfi.dylib, fileimg);
-    // print("-------1 => $facefounds_gpu bbox shold be x:582,y:496,w:771,h:771");
-    // await DlibFfi.test_string(DlibFfi.dylib);
+    //
+    var facefounds_gpu = await DlibFfi.detect_face(DlibFfi.dylib, fileimg);
+    print("-------1 => $facefounds_gpu bbox shold be x:582,y:496,w:771,h:771");
+    await DlibFfi.test_string(DlibFfi.dylib);
   }
 
   _init_Poc_Code();

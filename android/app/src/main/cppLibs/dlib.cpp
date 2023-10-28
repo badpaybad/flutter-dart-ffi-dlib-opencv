@@ -66,7 +66,7 @@ void detect_face_load_model(char *file_path) {
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
-long **detect_face(char *file_path) {
+long **detect_face(char *file_path, int pyramid_up_count) {
     if (_is_model_loaded == 0) {
         throw UnhandleException(
                 "Model did not load, call detect_face_load_model(...) with args file path: mmod_human_face_detector.dat");
@@ -86,7 +86,9 @@ long **detect_face(char *file_path) {
 
 
     //while (img.size() < 1800 * 1800) { pyramid_up(img); }
-    pyramid_up(img);
+    for (int i = 0; i < pyramid_up_count; i++) {
+        pyramid_up(img);
+    }
     /*
      *   // Note that you can process a bunch of images in a std::vector at once and it runs
         // much faster, since this will form mini-batches of images and therefore get
@@ -94,7 +96,7 @@ long **detect_face(char *file_path) {
         // the same size.  To avoid this requirement on images being the same size we
         // process them individually in this example.*/
 
-    std::vector<dlib::mmod_rect>  dets = net(img);
+    std::vector<dlib::mmod_rect> dets = net(img);
     int numRows = dets.size() + 1;
     int numCols = 4;
     long **listBbox = (long **) malloc(numRows * sizeof(long *));
@@ -105,7 +107,7 @@ long **detect_face(char *file_path) {
     listBbox[0][3] = static_cast<long>(0);
     for (int i = 1; i < numRows; i++) {
         dlib::mmod_rect mbbox = dets[i - 1];
-        dlib::rectangle bbox= mbbox.rect;
+        dlib::rectangle bbox = mbbox.rect;
         listBbox[i] = (long *) malloc(numCols * sizeof(long));
         listBbox[i][0] = static_cast<long>(bbox.top());
         listBbox[i][1] = static_cast<long>(bbox.left());
@@ -116,7 +118,7 @@ long **detect_face(char *file_path) {
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
-long **detect_face_cpu(char *file_path) {
+long **detect_face_cpu(char *file_path, int pyramid_up_count) {
     array2d<unsigned char> img;
 //    auto ms0=(float )(clock()/CLOCKS_PER_SEC);
     load_image(img, file_path);
@@ -130,7 +132,10 @@ long **detect_face_cpu(char *file_path) {
     // upsample the image we make the detector run slower since it must
     // process a larger image.
 //    auto ms1=(float )(clock()/CLOCKS_PER_SEC);
-    pyramid_up(img);
+    for (int i = 0; i < pyramid_up_count; i++) {
+        pyramid_up(img);
+    }
+
 //    auto ms2=(float )(clock()/CLOCKS_PER_SEC);
     // Now tell the face detector to give us a list of bounding boxes
     // around all the faces it can find in the image.
