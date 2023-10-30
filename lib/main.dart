@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:image/image.dart' as DartImg;
+
 void permissionsRequest() {
   if (!Platform.isLinux && !Platform.isMacOS && !Platform.isWindows) {
     [
@@ -184,6 +186,8 @@ class _MyHomePageState extends State<MyHomePage> {
     _init_Poc_Code();
   }
 
+  Uint8List? _bmpImagge;
+
   Future<List<BBox>> detectFaceByCpu() async {
     var facefounds = await DlibFfi.detect_face_cpu(DlibFfi.dylib, _fileSample);
     print(
@@ -196,8 +200,6 @@ class _MyHomePageState extends State<MyHomePage> {
     var facefounds_gpu = await DlibFfi.detect_face(DlibFfi.dylib, _fileSample);
     print(
         "-------1 => $facefounds_gpu bbox shold be similar x:582,y:496,w:771,h:771");
-    await DlibFfi.test_string(DlibFfi.dylib);
-    //
     return facefounds_gpu;
   }
 
@@ -211,7 +213,24 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     var f1 = detectFaceByCpu();
     var f2 = detectFaceByCNN();
+
     var res = await Future.wait([f1, f2]);
+
+    // var t1 = DateTime.now().millisecondsSinceEpoch;
+    // var rrbmp =
+    //     await DlibFfi.convertJpeg2Bmp(await File(_fileSample).readAsBytes());
+    // var t2 = DateTime.now().millisecondsSinceEpoch;
+    //  var f3Found = await DlibFfi.detect_face_from_bmp_array(
+    //      DlibFfi.dylib, rrbmp[0], rrbmp[1], rrbmp[2]);
+    // var t3 = DateTime.now().millisecondsSinceEpoch;
+    // _bmpImagge= rrbmp[0];
+    //
+    // if(mounted)  setState(() {
+    //
+    // });
+    //
+    // print("convert jpeg2bmp in ${t2 - t1} call face by array ${t3 - t2} found ");
+
     var cpufound = res[0];
     var gpufoud = res[1];
     _bboxes = [];
@@ -314,6 +333,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: _stackImageAndBoxes == null
                     ? Text("Waiting init PoC code")
                     : _stackImageAndBoxes!),
+            //Expanded(child: _bmpImagge==null?Text(""):Image.memory(_bmpImagge!)),
             Text(
               _logsText,
             ),

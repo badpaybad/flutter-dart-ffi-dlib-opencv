@@ -11,11 +11,15 @@
 #include <termios.h>
 
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <iostream>
+#include <cstdio>
+#include <istream>
 
 #include "dlib/include/dlib/dlib/image_processing/frontal_face_detector.h"
 //#include "../../android/app/src/main/cppLibs/dlib/include/dlib/dlib/gui_widgets.h"
@@ -175,7 +179,7 @@ void recognition_face_load_model(char *file_path) {
 
 }
 
-
+//https://flutter.dev/docs/development/platform-integration/c-interop
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
 long **detect_face(char *file_path, int pyramid_up_count) {
     if (_is_model_loaded == 0) {
@@ -228,6 +232,75 @@ long **detect_face(char *file_path, int pyramid_up_count) {
     return listBbox;
 }
 
+class MemoryBuffer : public std::streambuf {
+public:
+    MemoryBuffer(uint8_t* data, size_t length) {
+        setg(reinterpret_cast<char*>(data), reinterpret_cast<char*>(data), reinterpret_cast<char*>(data) + length);
+    }
+};
+
+class MemoryStream : public std::istream {
+public:
+    MemoryStream(uint8_t* data, size_t length) : std::istream(&buffer), buffer(data, length) {}
+private:
+    MemoryBuffer buffer;
+};
+
+
+extern "C" __attribute__((visibility("default"))) __attribute__((used))
+long **detect_face_from_bmp_array(uint8_t *data,size_t data_size, int32_t width, int32_t height, int pyramid_up_count) {
+    if (_is_model_loaded == 0) {
+        throw UnhandleException(
+                "Model did not load, call detect_face_load_model(...) with args file path: mmod_human_face_detector.dat");
+    }
+
+//    std::string aa("");
+//
+//    for(int i=0;i< data_size;i++){
+//        aa.append(std::to_string(data[i]))        ;
+//        aa.append(",");
+//    }
+//
+//    throw UnhandleException(aa);
+
+    MemoryStream dataStream(data, data_size);
+
+    matrix<rgb_pixel> img;
+    load_bmp(img,dataStream);
+//
+//    free(mem_file);
+
+    //while (img.size() < 1800 * 1800) { pyramid_up(img); }
+    for (int i = 0; i < pyramid_up_count; i++) {
+        pyramid_up(img);
+    }
+    /*
+     *   // Note that you can process a bunch of images in a std::vector at once and it runs
+        // much faster, since this will form mini-batches of images and therefore get
+        // better parallelism out of your GPU hardware.  However, all the images must be
+        // the same size.  To avoid this requirement on images being the same size we
+        // process them individually in this example.*/
+
+    std::vector<dlib::mmod_rect> dets = net_detect (img);
+    int numRows = dets.size() + 1;
+    int numCols = 4;
+    long **listBbox = (long **) malloc(numRows * sizeof(long *));
+    listBbox[0] = (long *) malloc(numCols * sizeof(long));
+    listBbox[0][0] = static_cast<long>(numRows);
+    listBbox[0][1] = static_cast<long>(numCols);
+    listBbox[0][2] = static_cast<long>(img.nr());
+    listBbox[0][3] = static_cast<long>(img.nc());
+    for (int i = 1; i < numRows; i++) {
+        dlib::mmod_rect mbbox = dets[i - 1];
+        dlib::rectangle bbox = mbbox.rect;
+        listBbox[i] = (long *) malloc(numCols * sizeof(long));
+        listBbox[i][0] = static_cast<long>(bbox.top());
+        listBbox[i][1] = static_cast<long>(bbox.left());
+        listBbox[i][2] = static_cast<long>(bbox.width());
+        listBbox[i][3] = static_cast<long>(bbox.height());
+    }
+    return listBbox;
+}
 extern "C" __attribute__((visibility("default"))) __attribute__((used))
 long **detect_face_cpu(char *file_path, int pyramid_up_count) {
     array2d<unsigned char> img;
