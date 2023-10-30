@@ -214,8 +214,8 @@ long **detect_face(char *file_path, int pyramid_up_count) {
     listBbox[0] = (long *) malloc(numCols * sizeof(long));
     listBbox[0][0] = static_cast<long>(numRows);
     listBbox[0][1] = static_cast<long>(numCols);
-    listBbox[0][2] = static_cast<long>(0);
-    listBbox[0][3] = static_cast<long>(0);
+    listBbox[0][2] = static_cast<long>(img.nr());
+    listBbox[0][3] = static_cast<long>(img.nc());
     for (int i = 1; i < numRows; i++) {
         dlib::mmod_rect mbbox = dets[i - 1];
         dlib::rectangle bbox = mbbox.rect;
@@ -263,8 +263,8 @@ long **detect_face_cpu(char *file_path, int pyramid_up_count) {
     listBbox[0] = (long *) malloc(numCols * sizeof(long));
     listBbox[0][0] = static_cast<long>(numRows);
     listBbox[0][1] = static_cast<long>(numCols);
-    listBbox[0][2] = static_cast<long>(0);
-    listBbox[0][3] = static_cast<long>(0);
+    listBbox[0][2] = static_cast<long>(img.nr());
+    listBbox[0][3] = static_cast<long>(img.nc());
     for (int i = 1; i < numRows; i++) {
         auto bbox = dets[i - 1];
         listBbox[i] = (long *) malloc(numCols * sizeof(long));

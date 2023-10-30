@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'interop/dlib.dart' as DlibFfi;
+import 'interop/dlib.dart';
 import 'interop/opencv.dart' as OpenCv;
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -96,25 +97,6 @@ void main() async {
 
   permissionsRequest();
 
-  _init_Poc_Code() async {
-    print(DlibFfi.dylib);
-    print(OpenCv.dylib);
-    var dir = await dirApp();
-    var fileimg = "$dir/dunp.jpg";
-    var filemodel = await get_file_path_mmod_human_face_detector_dat();
-    await DlibFfi.detect_face_load_model(DlibFfi.dylib, filemodel);
-    print("-------");
-    print(filemodel);
-    print(fileimg);
-    var facefounds = await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
-    print("-------1 => $facefounds bbox shold be x:582,y:496,w:771,h:771");
-    //
-    var facefounds_gpu = await DlibFfi.detect_face(DlibFfi.dylib, fileimg);
-    print("-------1 => $facefounds_gpu bbox shold be x:582,y:496,w:771,h:771");
-    await DlibFfi.test_string(DlibFfi.dylib);
-  }
-
-  _init_Poc_Code();
   runApp(const MyApp());
 }
 
@@ -171,32 +153,156 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  Future<void> _incrementCounter() async {
-    var dir = await dirApp();
-    var fileimg = "$dir/dunp.jpg";
-    var facefounds = await DlibFfi.detect_face_cpu(DlibFfi.dylib, fileimg);
-    print("-------1 => $facefounds bbox shold be x:582,y:496,w:771,h:771");
+  String appDir = "";
 
-    widget.title = "$facefounds";
+  String _fileSample = "";
+  String _logsText = "Press button pluss";
 
+  List<Widget> _bboxes = [];
+  Widget? _stackImageAndBoxes=null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _init_Poc_Code() async {
+      print(DlibFfi.dylib);
+      print(OpenCv.dylib);
+      var dir = await dirApp();
+      appDir = dir;
+      var fileimg = "$dir/dunp.jpg";
+      _fileSample = fileimg;
+      var filemodel = await get_file_path_mmod_human_face_detector_dat();
+      await DlibFfi.detect_face_load_model(DlibFfi.dylib, filemodel);
+      print("-------");
+      print(filemodel);
+      print(fileimg);
+
+      _btnPlussOnClick();
+    }
+
+    _init_Poc_Code();
+  }
+
+  Future<List<BBox>> detectFaceByCpu() async {
+    var facefounds = await DlibFfi.detect_face_cpu(DlibFfi.dylib, _fileSample);
+    print(
+        "-------1 => $facefounds bbox shold be similar x:582,y:496,w:771,h:771");
+    //
+    return facefounds;
+  }
+
+  Future<List<BBox>> detectFaceByCNN() async {
+    var facefounds_gpu = await DlibFfi.detect_face(DlibFfi.dylib, _fileSample);
+    print(
+        "-------1 => $facefounds_gpu bbox shold be similar x:582,y:496,w:771,h:771");
+    await DlibFfi.test_string(DlibFfi.dylib);
+    //
+    return facefounds_gpu;
+  }
+
+  Future<void> _btnPlussOnClick() async {
+     _detectAndDrawBBox();
+  }
+
+  Future<void> _detectAndDrawBBox( ) async {
+
+    while(sizeScreen==null){
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    var cpufound = await detectFaceByCpu();
+    var gpufoud = await detectFaceByCNN();
+    _bboxes = [];
+
+    cpufound.addAll(gpufoud);
+
+    if(cpufound.isEmpty){
+      _logsText="No found any face";
+      if(mounted)setState(() {
+
+      });
+      return;
+    }
+
+    int imgw=cpufound.first.imgw;
+    int imgh=cpufound.first.imgh;
+
+    double ratio= imgh/imgw;
+
+    var sizeW= sizeScreen!.width;
+    var sizeH= sizeScreen!.width*ratio;
+
+    var rw= sizeW/ imgw;
+    var rh= sizeH/imgh;
+
+    for (var b in cpufound) {
+      Container cb = Container(
+        width: b.w*rw,
+        height: b.h*rh,
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.red, width: 1),
+            color: Colors.transparent),
+        child: Text("HOG: $b"),
+      );
+      var bp = Positioned(
+        top: b.x*rw,
+        left: b.y*rh,
+        width: b.w*rw,
+        height: b.h*rh,
+        child: cb,
+      );
+      _bboxes.add(bp);
+    }
+
+    for (var b in gpufoud) {
+      Container cb = Container(
+        width: b.w*rw,
+        height: b.h*rh,
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.green, width: 1),
+            color: Colors.transparent),
+        child: Text("CNN: $b"),
+      );
+      var bp = Positioned(
+        top: b.x*rw,
+        left: b.y*rh,
+        width: b.w*rw,
+        height: b.h*rh,
+        child: cb,
+      );
+      _bboxes.add(bp);
+    }
+
+    var stak = Stack(
+
+      children: [
+        Positioned(left: 0,top: 0, width: sizeW,height: sizeH, child: Image.file(
+            File(_fileSample),
+          width: sizeW,
+          height: sizeH,)),
+        ..._bboxes],
+    );
+
+    _stackImageAndBoxes= SizedBox(
+      width: sizeW,
+     height: sizeH,
+     child: stak,
+    );
+
+    _logsText = "Done: Do again Press button pluss";
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
     });
   }
 
+  Size ?sizeScreen;
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    sizeScreen = MediaQuery.of(context).size;
+
+    print("sizeScreen: $sizeScreen");
+
     return Scaffold(
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
@@ -226,8 +332,10 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Expanded(
+                child: _stackImageAndBoxes==null?Text("Waiting init PoC code"):_stackImageAndBoxes!),
+            Text(
+              _logsText,
             ),
             Text(
               '$_counter',
@@ -237,7 +345,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: _btnPlussOnClick,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

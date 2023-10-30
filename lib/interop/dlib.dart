@@ -98,6 +98,8 @@ Future<List<BBox>> _parseFromNative(Pointer<Pointer<Int64>> pointers) async {
   List<BBox> facefound = [];
   int numrows = pointers[0][0];
   int numcols = pointers[0][1];
+  int imgw = pointers[0][2];
+  int imgh = pointers[0][2];
 
   for (var i = 1; i < numrows; i++) {
     if (pointers[i] == nullptr) continue;
@@ -106,6 +108,8 @@ Future<List<BBox>> _parseFromNative(Pointer<Pointer<Int64>> pointers) async {
     row.y = pointers[i][1];
     row.w = pointers[i][2];
     row.h = pointers[i][3];
+    row.imgw = imgw;
+    row.imgh = imgh;
     facefound.add(row);
   }
 
@@ -125,9 +129,11 @@ class BBox {
   int y = 0;
   int w = -1;
   int h = -1;
+  int imgw = 0;
+  int imgh = 0;
 
   @override
   String toString() {
-    return '{"x": $x, "y": $y, "w": $w, "h": $h}';
+    return '{"x":$x,"y":$y,"w":$w,"h":$h,"imgw":$imgw,"imgh":$imgh}';
   }
 }
