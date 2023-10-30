@@ -159,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _logsText = "Press button pluss";
 
   List<Widget> _bboxes = [];
-  Widget? _stackImageAndBoxes=null;
+  Widget? _stackImageAndBoxes = null;
 
   @override
   void initState() {
@@ -202,92 +202,89 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _btnPlussOnClick() async {
-     _detectAndDrawBBox();
+    _detectAndDrawBBox();
   }
 
-  Future<void> _detectAndDrawBBox( ) async {
-
-    while(sizeScreen==null){
+  Future<void> _detectAndDrawBBox() async {
+    while (sizeScreen == null) {
       await Future.delayed(const Duration(milliseconds: 100));
     }
-
-    var cpufound = await detectFaceByCpu();
-    var gpufoud = await detectFaceByCNN();
+    var f1 = detectFaceByCpu();
+    var f2 = detectFaceByCNN();
+    var res = await Future.wait([f1, f2]);
+    var cpufound = res[0];
+    var gpufoud = res[1];
     _bboxes = [];
-
     cpufound.addAll(gpufoud);
-
-    if(cpufound.isEmpty){
-      _logsText="No found any face";
-      if(mounted)setState(() {
-
-      });
+    if (cpufound.isEmpty) {
+      _logsText = "No found any face";
+      if (mounted) setState(() {});
       return;
     }
-
-    int imgw=cpufound.first.imgw;
-    int imgh=cpufound.first.imgh;
-
-    double ratio= imgh/imgw;
-
-    var sizeW= sizeScreen!.width;
-    var sizeH= sizeScreen!.width*ratio;
-
-    var rw= sizeW/ imgw;
-    var rh= sizeH/imgh;
-
+    int imgw = cpufound.first.imgw;
+    int imgh = cpufound.first.imgh;
+    double ratio = imgh / imgw;
+    var sizeW = sizeScreen!.width;
+    var sizeH = sizeScreen!.width * ratio;
+    var rw = sizeW / imgw;
+    var rh = sizeH / imgh;
     for (var b in cpufound) {
       Container cb = Container(
-        width: b.w*rw,
-        height: b.h*rh,
+        width: b.w * rw,
+        height: b.h * rh,
         decoration: BoxDecoration(
             border: Border.all(color: Colors.red, width: 1),
             color: Colors.transparent),
         child: Text("HOG: $b"),
       );
       var bp = Positioned(
-        top: b.x*rw,
-        left: b.y*rh,
-        width: b.w*rw,
-        height: b.h*rh,
+        top: b.x * rw,
+        left: b.y * rh,
+        width: b.w * rw,
+        height: b.h * rh,
         child: cb,
       );
       _bboxes.add(bp);
     }
-
     for (var b in gpufoud) {
       Container cb = Container(
-        width: b.w*rw,
-        height: b.h*rh,
+        width: b.w * rw,
+        height: b.h * rh,
         decoration: BoxDecoration(
             border: Border.all(color: Colors.green, width: 1),
             color: Colors.transparent),
         child: Text("CNN: $b"),
       );
       var bp = Positioned(
-        top: b.x*rw,
-        left: b.y*rh,
-        width: b.w*rw,
-        height: b.h*rh,
+        top: b.x * rw,
+        left: b.y * rh,
+        width: b.w * rw,
+        height: b.h * rh,
         child: cb,
       );
       _bboxes.add(bp);
     }
 
     var stak = Stack(
-
       children: [
-        Positioned(left: 0,top: 0, width: sizeW,height: sizeH, child: Image.file(
-            File(_fileSample),
-          width: sizeW,
-          height: sizeH,)),
-        ..._bboxes],
+        Positioned(
+            left: 0,
+            top: 0,
+            width: sizeW,
+            height: sizeH,
+            child: Image.file(
+              File(_fileSample),
+              width: sizeW,
+              height: sizeH,
+            )),
+        ..._bboxes
+      ],
     );
 
-    _stackImageAndBoxes= SizedBox(
+    _stackImageAndBoxes = SizedBox(
       width: sizeW,
-     height: sizeH,
-     child: stak,
+      height: sizeH,
+      child: stak,
     );
 
     _logsText = "Done: Do again Press button pluss";
@@ -296,7 +293,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Size ?sizeScreen;
+  Size? sizeScreen;
+
   @override
   Widget build(BuildContext context) {
     sizeScreen = MediaQuery.of(context).size;
@@ -305,35 +303,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Expanded(
-                child: _stackImageAndBoxes==null?Text("Waiting init PoC code"):_stackImageAndBoxes!),
+                child: _stackImageAndBoxes == null
+                    ? Text("Waiting init PoC code")
+                    : _stackImageAndBoxes!),
             Text(
               _logsText,
             ),
