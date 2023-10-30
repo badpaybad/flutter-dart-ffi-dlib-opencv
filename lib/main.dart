@@ -242,6 +242,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     int imgw = cpufound.first.imgw;
     int imgh = cpufound.first.imgh;
+
+    if(imgw==0 || imgh==0){
+      var imgxxx=await DartImg.decodeJpgFile(_fileSample);
+      imgw=imgxxx!.width;
+      imgh=imgxxx!.height;
+    }
+
     double ratio = imgh / imgw;
     var sizeW = sizeScreen!.width;
     var sizeH = sizeScreen!.width * ratio;

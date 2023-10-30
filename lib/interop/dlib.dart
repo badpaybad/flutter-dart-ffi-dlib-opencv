@@ -100,7 +100,7 @@ Future<List<BBox>> _parseFromNative(Pointer<Pointer<Int64>> pointers) async {
   int numrows = pointers[0][0];
   int numcols = pointers[0][1];
   int imgw = pointers[0][2];
-  int imgh = pointers[0][2];
+  int imgh = pointers[0][3];
 
   for (var i = 1; i < numrows; i++) {
     if (pointers[i] == nullptr) continue;
