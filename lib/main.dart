@@ -178,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
       print(filemodel);
       print(fileimg);
 
-      _btnPlussOnClick();
+      _detectAndDrawBBox();
     }
 
     _init_Poc_Code();
