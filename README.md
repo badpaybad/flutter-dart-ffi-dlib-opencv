@@ -1,7 +1,7 @@
 
 # dartffi_dlib_opencv
 
-Base on idea and build libdlib.so for android with java https://github.com/Luca96/dlib-for-android/tree/master
+Base on idea and build libdlib.so for android with java https://github.com/Luca96/dlib-for-android/tree/master and https://github.com/tzutalin/dlib-android 
 
 I try to build and use libdlib.so with FFI dart. You dont need to build .so cause I prebuild in android/app/src/main/cppLibs/dlib/lib
 
