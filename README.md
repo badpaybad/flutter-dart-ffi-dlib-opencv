@@ -1,3 +1,9 @@
+# some words
+
+U can use Method Channel to invoke lib native in java. 
+But look inside native java. they also call native to c. c/c++ 
+So why we need use method channel if we can direct call to c/c++ with shared lib (.so) build from source code.
+Let try .....
 
 # dartffi_dlib_opencv
 
