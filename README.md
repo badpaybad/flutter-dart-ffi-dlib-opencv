@@ -1,3 +1,7 @@
+# simple sample to build c/c++ to ..so file then called by ffi dart
+
+https://github.com/badpaybad/AndroidNdkBuildWithCmakelist
+
 # some words
 
 U can use Method Channel to invoke lib native in java. 
