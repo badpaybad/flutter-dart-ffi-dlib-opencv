@@ -244,7 +244,8 @@ class _MyHomePageState extends State<MyHomePage> {
     int imgh = cpufound.first.imgh;
 
     if(imgw==0 || imgh==0){
-      var imgxxx=await DartImg.decodeJpgFile(_fileSample);
+
+      var imgxxx=await DartImg.decodeJpg(File(_fileSample).readAsBytesSync().toList());
       imgw=imgxxx!.width;
       imgh=imgxxx!.height;
     }
