@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:dartffi_dlib_opencv/interop/tflitepredict.dart';
 import 'package:flutter/material.dart';
+import 'package:oktoast/oktoast.dart';
 import 'interop/dlib.dart' as DlibFfi;
 import 'interop/dlib.dart';
 import 'interop/opencv.dart' as OpenCv;
@@ -109,6 +111,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      builder: (_,child){
+        return OKToast(child: child!);
+      },
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -203,8 +208,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return facefounds_gpu;
   }
 
+  tflitepredict _modelFtlite=tflitepredict();
+
   Future<void> _btnPlussOnClick() async {
     _detectAndDrawBBox();
+     _modelFtlite.chunom_detection().then((value) {
+       showToastWidget(Column(children: [Text("[[[x,y,w,h],...]]")
+       ,Text("${value}")],));
+     });
   }
 
   Future<void> _detectAndDrawBBox() async {
